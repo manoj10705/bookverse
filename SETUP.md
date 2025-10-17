@@ -53,7 +53,7 @@ cp .env.example .env
 
 Edit `server/.env` file:
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bookverse?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://ganymede323_db_user:<db_password>@bookverse.5kfkkyb.mongodb.net/?retryWrites=true&w=majority&appName=Bookverse
 JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
 PORT=5000
 ```

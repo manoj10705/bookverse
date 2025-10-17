@@ -23,17 +23,18 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bookverse';
+const MONGODB_URI = process.env.MONGODB_URI /*|| 'mongodb://localhost:27017/bookverse'*/;
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
+  if (MONGODB_URI.includes('mongodb.net')) {
+    console.log('✅ Connected to MongoDB Atlas (online)');
+  } else {
+    console.log('✅ Connected to Local MongoDB');
+  }
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
+})
 
 export default app;
