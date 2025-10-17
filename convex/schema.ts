@@ -14,20 +14,19 @@ const applicationTables = {
     averageRating: v.number(),
     totalReviews: v.number(),
   })
-    .index("by_title", ["title"])
-    .index("by_author", ["author"])
     .index("by_genre", ["genre"])
+    .index("by_author", ["author"])
     .searchIndex("search_books", {
       searchField: "title",
-      filterFields: ["author", "genre"],
+      filterFields: ["genre", "author"],
     }),
 
   reviews: defineTable({
     bookId: v.id("books"),
     userId: v.id("users"),
-    rating: v.number(), // 1-5 stars
+    rating: v.number(),
     reviewText: v.optional(v.string()),
-    isEdited: v.optional(v.boolean()),
+    isEdited: v.boolean(),
   })
     .index("by_book", ["bookId"])
     .index("by_user", ["userId"])
@@ -37,9 +36,10 @@ const applicationTables = {
     userId: v.id("users"),
     displayName: v.optional(v.string()),
     bio: v.optional(v.string()),
-    favoriteGenres: v.optional(v.array(v.string())),
+    favoriteGenres: v.array(v.string()),
     totalReviews: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"]),
 };
 
 export default defineSchema({

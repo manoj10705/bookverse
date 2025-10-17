@@ -1,226 +1,244 @@
-# BookVerse Setup Guide
+# 🚀 BookVerse MERN Stack Setup Guide
 
-This guide will walk you through setting up the BookVerse project from scratch.
+Complete step-by-step guide to set up your BookVerse application locally.
 
-## Quick Start (5 minutes)
+## 📋 Prerequisites
 
-### 1. Prerequisites Check
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
+- **MongoDB** - Choose one option:
+  - **Local MongoDB** - [Download here](https://www.mongodb.com/try/download/community)
+  - **MongoDB Atlas** (Cloud) - [Sign up here](https://www.mongodb.com/atlas)
+- **Git** - [Download here](https://git-scm.com/)
+
+## 🛠️ Installation Steps
+
+### 1. Clone & Navigate to Project
 ```bash
-# Check Node.js version (should be 18+)
-node --version
-
-# Check npm version
-npm --version
+git clone <your-repository-url>
+cd bookverse
 ```
 
-### 2. Clone and Install
+### 2. Install Frontend Dependencies
 ```bash
-# Clone your repository
-git clone <your-repo-url>
-cd bookverse
-
-# Install dependencies
 npm install
 ```
 
-### 3. Set Up Convex Backend
+### 3. Install Backend Dependencies
 ```bash
-# Install Convex CLI globally (if not already installed)
-npm install -g convex
-
-# Login to Convex (creates account if needed)
-npx convex login
-
-# Initialize and deploy backend
-npx convex dev
+npm run server:install
 ```
 
-**Important**: When you run `npx convex dev` for the first time:
-- It will open your browser to create/select a Convex project
-- It will automatically create a `.env.local` file with your deployment URL
-- It will deploy all your backend functions
+### 4. Set Up Environment Variables
 
-### 4. Seed Sample Data (Optional)
+#### Option A: Local MongoDB
 ```bash
-# Add sample books to your database
-npx convex run seedData:seedBooks
+cd server
+cp .env.example .env
 ```
 
-### 5. Start Development
+Edit `server/.env` file:
+```env
+MONGODB_URI=mongodb://localhost:27017/bookverse
+JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
+PORT=5000
+```
+
+#### Option B: MongoDB Atlas (Cloud)
 ```bash
-# Start both frontend and backend
+cd server
+cp .env.example .env
+```
+
+Edit `server/.env` file:
+```env
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bookverse?retryWrites=true&w=majority
+JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
+PORT=5000
+```
+
+**To get MongoDB Atlas URI:**
+1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create account & cluster
+3. Go to "Connect" → "Connect your application"
+4. Copy the connection string
+5. Replace `<username>`, `<password>`, and `<dbname>`
+
+### 5. Start MongoDB (Local Only)
+If using local MongoDB:
+```bash
+# On macOS (with Homebrew)
+brew services start mongodb-community
+
+# On Windows
+net start MongoDB
+
+# On Linux
+sudo systemctl start mongod
+```
+
+### 6. Seed Sample Data (Optional)
+```bash
+npm run server:seed
+```
+
+This adds sample books to your database for testing.
+
+### 7. Start Development Servers
+```bash
 npm run dev
 ```
 
-Your app will be available at `http://localhost:5173`
+This starts both servers simultaneously:
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:5000
 
-## Detailed Setup Instructions
+## 🎯 Alternative: Start Servers Separately
 
-### Setting Up Git Repository
+If you prefer to run servers in separate terminals:
 
-If you haven't created a Git repository yet:
-
+**Terminal 1 - Backend:**
 ```bash
-# Initialize git repository
-git init
-
-# Add all files
-git add .
-
-# Make initial commit
-git commit -m "Initial commit: BookVerse project setup"
-
-# Add remote repository (replace with your GitHub repo URL)
-git remote add origin https://github.com/yourusername/bookverse.git
-
-# Push to GitHub
-git push -u origin main
+npm run dev:backend
 ```
 
-### Convex Dashboard
-
-After setting up Convex, you can access your dashboard at:
-- Go to [dashboard.convex.dev](https://dashboard.convex.dev)
-- Select your project
-- Here you can:
-  - View your database tables
-  - Monitor function calls
-  - Manage environment variables
-  - View logs
-
-### Project Configuration
-
-The project comes pre-configured with:
-- **Authentication**: Username/password login
-- **Database Schema**: Books, reviews, and user profiles
-- **Search**: Full-text search on book titles
-- **Real-time Updates**: Automatic UI updates when data changes
-
-## Development Workflow
-
-### Adding New Features
-
-1. **Backend Changes** (Convex functions):
-   ```bash
-   # Functions are automatically deployed when you save files
-   # Check the Convex dev server output for any errors
-   ```
-
-2. **Frontend Changes** (React components):
-   ```bash
-   # The Vite dev server will hot-reload your changes
-   # Check the browser console for any errors
-   ```
-
-### Database Management
-
-1. **View Data**:
-   - Open Convex dashboard
-   - Go to "Data" tab
-   - Browse your tables: books, reviews, userProfiles, users
-
-2. **Clear Data** (if needed):
-   - In the dashboard, select a table
-   - Click "..." menu → "Clear Table"
-
-3. **Add Sample Data**:
-   ```bash
-   npx convex run seedData:seedBooks
-   ```
-
-### Common Development Tasks
-
-#### Adding a New Book Programmatically
+**Terminal 2 - Frontend:**
 ```bash
-npx convex run books:addBook '{
-  "title": "Your Book Title",
-  "author": "Author Name", 
-  "genre": "Fiction",
-  "description": "Book description..."
-}'
+npm run dev:frontend
 ```
 
-#### Checking Function Logs
-- Open Convex dashboard
-- Go to "Logs" tab
-- View real-time function execution logs
+## 🧪 Test Your Setup
 
-#### Updating Schema
-1. Modify `convex/schema.ts`
-2. Save the file (auto-deploys)
-3. If there are conflicts with existing data, you may need to clear tables
+1. **Open your browser** to http://localhost:5173
+2. **Register a new account** or use the sample data
+3. **Try these features:**
+   - Browse books on the homepage
+   - Search for books
+   - Register/Login
+   - Add a new book (requires login)
+   - Rate and review books
 
-## Troubleshooting
+## 📁 Project Structure
 
-### Issue: "Cannot find module" errors
-**Solution**: 
-```bash
-rm -rf node_modules package-lock.json
-npm install
+```
+bookverse/
+├── src/                    # React Frontend
+│   ├── components/         # Reusable UI components
+│   ├── pages/             # Page components (Home, Login, etc.)
+│   ├── contexts/          # React Context (Auth)
+│   └── lib/               # Utility functions
+├── server/                # Express Backend
+│   ├── src/
+│   │   ├── models/        # MongoDB/Mongoose models
+│   │   ├── routes/        # API route handlers
+│   │   ├── middleware/    # Custom middleware (auth)
+│   │   └── server.js      # Express server entry point
+│   ├── .env               # Environment variables
+│   └── package.json       # Backend dependencies
+├── public/                # Static assets
+└── package.json           # Frontend dependencies
 ```
 
-### Issue: Convex functions not updating
-**Solution**:
+## 🔧 Available Scripts
+
+### Frontend (Root Directory)
+- `npm run dev` - Start both frontend & backend
+- `npm run dev:frontend` - Start only frontend (Vite)
+- `npm run build` - Build for production
+- `npm run lint` - Run TypeScript linter
+
+### Backend (Server Directory)
+- `npm run server:install` - Install backend dependencies
+- `npm run server:start` - Start backend in production mode
+- `npm run server:seed` - Seed database with sample data
+- `npm run dev:backend` - Start backend in development mode
+
+## 🐛 Troubleshooting
+
+### Common Issues:
+
+**1. "Cannot connect to MongoDB"**
+- Ensure MongoDB is running (local) or connection string is correct (Atlas)
+- Check firewall settings
+- Verify network connectivity
+
+**2. "Port 5000 already in use"**
+- Change `PORT=5001` in `server/.env`
+- Update `axios.defaults.baseURL` in `src/App.tsx`
+
+**3. "Module not found" errors**
+- Run `npm install` in root directory
+- Run `npm run server:install` for backend dependencies
+
+**4. CORS errors**
+- Ensure backend is running on port 5000
+- Check `axios.defaults.baseURL` in `src/App.tsx`
+
+**5. JWT/Auth issues**
+- Ensure `JWT_SECRET` is set in `server/.env`
+- Clear browser localStorage and try again
+
+### Reset Database:
 ```bash
-# Stop the dev server (Ctrl+C)
-npx convex dev
+# Connect to MongoDB and drop database
+mongo
+use bookverse
+db.dropDatabase()
+
+# Then re-seed
+npm run server:seed
 ```
 
-### Issue: Authentication not working
-**Solution**:
-1. Check that `convex/auth.ts` and `convex/auth.config.ts` are not modified
-2. Clear browser cookies and localStorage
-3. Restart the dev server
+## 🌐 API Endpoints
 
-### Issue: Database schema conflicts
-**Solution**:
-1. Go to Convex dashboard
-2. Clear the conflicting table
-3. Re-run seed data if needed
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/me` - Get current user info
 
-### Issue: Port already in use
-**Solution**:
-```bash
-# Kill process on port 5173
-npx kill-port 5173
+### Books
+- `GET /api/books` - Get all books (supports search & filter)
+- `GET /api/books/:id` - Get single book
+- `POST /api/books` - Add new book (auth required)
+- `GET /api/books/meta/genres` - Get all available genres
 
-# Or use a different port
-npm run dev -- --port 3000
-```
+### Reviews
+- `GET /api/reviews/book/:bookId` - Get reviews for a book
+- `GET /api/reviews/user/:userId` - Get user's reviews
+- `POST /api/reviews` - Add/update review (auth required)
+- `DELETE /api/reviews/:reviewId` - Delete review (auth required)
 
-## Production Deployment
+### Users
+- `GET /api/users/profile/:userId` - Get user profile
+- `PUT /api/users/profile` - Update user profile (auth required)
+
+## 🚀 Deployment
 
 ### Frontend (Vercel/Netlify)
-1. Build the project:
-   ```bash
-   npm run build
-   ```
-2. Deploy the `dist` folder
+1. Build: `npm run build`
+2. Deploy `dist/` folder
+3. Update API base URL for production
 
-### Backend (Convex)
-```bash
-# Deploy to production
-npx convex deploy --prod
-```
+### Backend (Railway/Render/Heroku)
+1. Set environment variables
+2. Deploy `server/` directory
+3. Ensure MongoDB Atlas is configured
 
-### Environment Variables for Production
-- `VITE_CONVEX_URL`: Your production Convex URL
-- Set this in your hosting platform (Vercel, Netlify, etc.)
+## 📝 Next Steps
 
-## Next Steps
+- Add more books to your collection
+- Customize the UI/styling
+- Add more features (favorites, recommendations, etc.)
+- Set up production deployment
+- Add tests
 
-After setup, you can:
-1. **Customize the UI**: Modify components in `src/components/`
-2. **Add Features**: Create new Convex functions and React components
-3. **Integrate APIs**: Add external book APIs for more data
-4. **Add Social Features**: Implement following, book lists, etc.
-5. **Improve Search**: Add more search filters and sorting options
+## 🆘 Need Help?
 
-## Getting Help
+If you encounter issues:
+1. Check this troubleshooting guide
+2. Verify all prerequisites are installed
+3. Ensure environment variables are set correctly
+4. Check browser console and server logs for errors
 
-- **Convex Docs**: [docs.convex.dev](https://docs.convex.dev)
-- **Convex Discord**: [convex.dev/community](https://convex.dev/community)
-- **React Docs**: [react.dev](https://react.dev)
-- **Tailwind Docs**: [tailwindcss.com](https://tailwindcss.com)
-
-Happy coding! 🚀
+Happy coding! 🎉

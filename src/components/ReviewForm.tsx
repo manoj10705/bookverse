@@ -1,98 +1,120 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
-import StarRating from "./StarRating";
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import StarRating from './StarRating';
 
 interface ReviewFormProps {
-  bookId: Id<"books">;
-  existingReview?: any;
-  onClose: () => void;
+  bookId: string;
+  onReviewSubmitted: () => void;
 }
 
-export default function ReviewForm({ bookId, existingReview, onClose }: ReviewFormProps) {
-  const [rating, setRating] = useState(existingReview?.rating || 0);
-  const [reviewText, setReviewText] = useState(existingReview?.reviewText || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const ReviewForm: React.FC<ReviewFormProps> = ({ bookId, onReviewSubmitted }) => {
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [existingReview, setExistingReview] = useState<any>(null);
 
-  const addOrUpdateReview = useMutation(api.reviews.addOrUpdateReview);
+  useEffect(() => {
+    checkExistingReview();
+  }, [bookId]);
+
+  const checkExistingReview = async () => {
+    try {
+      const response = await axios.get(`/api/reviews/book/${bookId}`);
+      const userReview = response.data.find((review: any) => 
+        review.userId._id === localStorage.getItem('userId')
+      );
+      
+      if (userReview) {
+        setExistingReview(userReview);
+        setRating(userReview.rating);
+        setReviewText(userReview.reviewText || '');
+      }
+    } catch (err) {
+      console.error('Error checking existing review:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (rating === 0) {
-      toast.error("Please select a rating");
+      setError('Please select a rating');
       return;
     }
 
-    setIsSubmitting(true);
+    setError('');
+    setLoading(true);
+
     try {
-      await addOrUpdateReview({
+      await axios.post('/api/reviews', {
         bookId,
         rating,
-        reviewText: reviewText.trim() || undefined,
+        reviewText: reviewText.trim() || undefined
       });
+
+      onReviewSubmitted();
       
-      toast.success(existingReview ? "Review updated!" : "Review added!");
-      onClose();
-    } catch (error) {
-      toast.error("Failed to save review");
+      if (!existingReview) {
+        setRating(0);
+        setReviewText('');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to submit review');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">
-          {existingReview ? "Edit Review" : "Write a Review"}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rating *
-            </label>
-            <StarRating
-              rating={rating}
-              onRatingChange={setRating}
-              size="lg"
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Review (optional)
-            </label>
-            <textarea
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Share your thoughts about this book..."
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            />
-          </div>
-
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting || rating === 0}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? "Saving..." : existingReview ? "Update Review" : "Submit Review"}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Rating *
+        </label>
+        <StarRating 
+          rating={rating} 
+          onRatingChange={setRating}
+          size="lg"
+        />
       </div>
-    </div>
+
+      <div>
+        <label htmlFor="reviewText" className="block text-sm font-medium text-gray-700 mb-2">
+          Review (optional)
+        </label>
+        <textarea
+          id="reviewText"
+          value={reviewText}
+          onChange={(e) => setReviewText(e.target.value)}
+          rows={4}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Share your thoughts about this book..."
+          maxLength={2000}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          {reviewText.length}/2000 characters
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading || rating === 0}
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading 
+          ? (existingReview ? 'Updating...' : 'Submitting...') 
+          : (existingReview ? 'Update Review' : 'Submit Review')
+        }
+      </button>
+    </form>
   );
-}
+};
+
+export default ReviewForm;
